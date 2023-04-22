@@ -11,8 +11,9 @@ namespace Files.EntityFrameworkCore.Extensions
 		public string Hash { get; set; }
 		public DateTimeOffset TimeStamp { get; set; }
 		public Guid? NextId { get; set; }
-		public int Start { get; set; }
-		public int Length { get; set; }
+		public long Start { get; set; }
+		public long ChunkBytesLength { get; set; }
+		public long TotalBytesLength { get; set; }
 		public byte[] Data { get; set; }
 	}
 }
