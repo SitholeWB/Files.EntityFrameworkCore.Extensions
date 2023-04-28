@@ -11,5 +11,7 @@ namespace WebApi.Data
 		}
 
 		public DbSet<User> User { get; set; } = default!;
+
+		public DbSet<WebApi.Entities.UserImage>? UserImage { get; set; }
 	}
 }
