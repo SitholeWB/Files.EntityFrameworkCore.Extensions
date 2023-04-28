@@ -12,7 +12,27 @@ namespace Files.EntityFrameworkCore.Extensions
 			return dbContext.Set<T>().Find(id);
 		}
 
-		public static Guid SaveFile<T>(this DbContext dbContext, Stream stream, string name, string mimeType, Guid? fileId = null, long? chunkSize = null) where T : class, IFileEntity, new()
+		public static FilesExtensionsResponse GetFileStreamAsync<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
+		{
+			var response = new FilesExtensionsResponse { };
+			var mainFile = dbContext.Set<T>().Find(id);
+			if (mainFile == null)
+			{
+				return response;
+			}
+			response.Length = mainFile.TotalBytesLength;
+			response.Name = mainFile.Name;
+			response.MimeType = mainFile.MimeType;
+			response.Stream = new MemoryStream();
+			while (mainFile.NextId.HasValue)
+			{
+				mainFile = dbContext.Set<T>().Find(mainFile.NextId.Value);
+			}
+
+			return response;
+		}
+
+		public static Guid SaveFile<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, long? chunkSize = null) where T : class, IFileEntity, new()
 		{
 			var bufferLen = (chunkSize.HasValue && chunkSize.Value > 0) ? chunkSize.Value : FileHelper.MAX_CHUNK_SIZE;
 			var buffer = new byte[bufferLen];
@@ -34,7 +54,7 @@ namespace Files.EntityFrameworkCore.Extensions
 					Name = name,
 					ChunkBytesLength = bufferLen,
 					Start = stream.Position,
-					MimeType = mimeType,
+					MimeType = string.IsNullOrWhiteSpace(mimeType) ? "application/octet-stream" : mimeType,
 					TimeStamp = DateTimeOffset.UtcNow,
 					TotalBytesLength = stream.Length
 				};
@@ -55,7 +75,6 @@ namespace Files.EntityFrameworkCore.Extensions
 				{
 					tempT.NextId = nextId;
 				}
-
 				dbContext.Add<T>(tempT);
 			} while (bytesRead != 0);
 

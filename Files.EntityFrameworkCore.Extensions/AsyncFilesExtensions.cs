@@ -13,7 +13,7 @@ namespace Files.EntityFrameworkCore.Extensions
 			return await dbContext.Set<T>().FindAsync(id);
 		}
 
-		public static async Task<Guid> SaveFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType, Guid? fileId = null, long? chunkSize = null) where T : class, IFileEntity, new()
+		public static async Task<Guid> SaveFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, long? chunkSize = null) where T : class, IFileEntity, new()
 		{
 			var bufferLen = (chunkSize.HasValue && chunkSize.Value > 0) ? chunkSize.Value : FileHelper.MAX_CHUNK_SIZE;
 			var buffer = new byte[bufferLen];
@@ -35,7 +35,7 @@ namespace Files.EntityFrameworkCore.Extensions
 					Name = name,
 					ChunkBytesLength = bufferLen,
 					Start = stream.Position,
-					MimeType = mimeType,
+					MimeType = string.IsNullOrWhiteSpace(mimeType) ? "application/octet-stream" : mimeType,
 					TimeStamp = DateTimeOffset.UtcNow,
 					TotalBytesLength = stream.Length
 				};

@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Files.EntityFrameworkCore.Extensions", "Files.EntityFrameworkCore.Extensions\Files.EntityFrameworkCore.Extensions.csproj", "{FD6FE7A5-E1CF-4495-95A6-8A4E9D5A7D8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Files.EntityFrameworkCore.Extensions", "Files.EntityFrameworkCore.Extensions\Files.EntityFrameworkCore.Extensions.csproj", "{FD6FE7A5-E1CF-4495-95A6-8A4E9D5A7D8A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{5289D317-A243-409C-B8EE-12FAD598AB02}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi", "WebApi\WebApi.csproj", "{AA1D6BA4-555F-44E4-AB38-03307D42E5F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +19,16 @@ Global
 		{FD6FE7A5-E1CF-4495-95A6-8A4E9D5A7D8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD6FE7A5-E1CF-4495-95A6-8A4E9D5A7D8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD6FE7A5-E1CF-4495-95A6-8A4E9D5A7D8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA1D6BA4-555F-44E4-AB38-03307D42E5F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA1D6BA4-555F-44E4-AB38-03307D42E5F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA1D6BA4-555F-44E4-AB38-03307D42E5F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA1D6BA4-555F-44E4-AB38-03307D42E5F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AA1D6BA4-555F-44E4-AB38-03307D42E5F8} = {5289D317-A243-409C-B8EE-12FAD598AB02}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {784505FC-1881-4A36-A725-2A2A740D2AC6}
