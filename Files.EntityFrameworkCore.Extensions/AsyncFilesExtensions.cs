@@ -10,13 +10,13 @@ namespace Files.EntityFrameworkCore.Extensions
 	{
 		public static async Task<IFileEntity> GetFileInfoAsync<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
 		{
-			return await dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+			return await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id);
 		}
 
 		public static async Task<FilesExtensionsResponse> GetFileStreamAsync<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
 		{
 			var response = new FilesExtensionsResponse { };
-			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id);
 			if (mainFile == null)
 			{
 				return response;
@@ -29,7 +29,12 @@ namespace Files.EntityFrameworkCore.Extensions
 			var nextId = mainFile.NextId;
 			while (mainFile.NextId.HasValue)
 			{
-				mainFile = await dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == nextId);
+				mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == nextId);
+				if (mainFile == null)
+				{
+					//Should never be null but someone might mess up with chunks in the database
+					break;
+				}
 				await response.Stream.WriteAsync(mainFile.Data, 0, mainFile.ChunkBytesLength);
 				nextId = mainFile.NextId;
 			}
@@ -38,7 +43,7 @@ namespace Files.EntityFrameworkCore.Extensions
 
 		public static async Task DownloadFileToStreamAsync<T>(this DbContext dbContext, Guid id, Stream outputStream) where T : class, IFileEntity
 		{
-			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id);
 			if (mainFile == null)
 			{
 				throw new FileNotFoundException();
@@ -47,7 +52,12 @@ namespace Files.EntityFrameworkCore.Extensions
 			var nextId = mainFile.NextId;
 			while (mainFile.NextId.HasValue)
 			{
-				mainFile = await dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == nextId);
+				mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == nextId);
+				if (mainFile == null)
+				{
+					//Should never be null but someone might mess up with chunks in the database
+					break;
+				}
 				await outputStream.WriteAsync(mainFile.Data, 0, mainFile.ChunkBytesLength);
 				nextId = mainFile.NextId;
 			}
@@ -58,6 +68,29 @@ namespace Files.EntityFrameworkCore.Extensions
 			catch
 			{
 				//Other streams may block the setting of this, so don't break. Allow caller to handle position
+			}
+		}
+
+		public static async Task DeleteFileAsync<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
+		{
+			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id);
+			if (mainFile == null)
+			{
+				throw new FileNotFoundException();
+			}
+
+			dbContext.Remove(mainFile);
+			var nextId = mainFile.NextId;
+			while (mainFile.NextId.HasValue)
+			{
+				mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == nextId);
+				if (mainFile == null)
+				{
+					//Should never be null but someone might mess up with chunks in the database
+					break;
+				}
+				dbContext.Remove(mainFile);
+				nextId = mainFile.NextId;
 			}
 		}
 

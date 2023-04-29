@@ -67,15 +67,10 @@ namespace WebApi.Controllers
 				return NotFound();
 			}
 
-			_context.UserImage.Remove(userImage);
+			await _context.DeleteFileAsync<UserImage>(id);
 			await _context.SaveChangesAsync();
 
 			return NoContent();
-		}
-
-		private bool UserImageExists(Guid id)
-		{
-			return (_context.UserImage?.Any(e => e.Id == id)).GetValueOrDefault();
 		}
 	}
 }
