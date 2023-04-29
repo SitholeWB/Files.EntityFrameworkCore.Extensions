@@ -12,7 +12,7 @@ namespace WebApi.Entities
 		public DateTimeOffset TimeStamp { get; set; }
 		public Guid? NextId { get; set; }
 		public long Start { get; set; }
-		public long ChunkBytesLength { get; set; }
+		public int ChunkBytesLength { get; set; }
 		public long TotalBytesLength { get; set; }
 		public byte[] Data { get; set; }
 	}

@@ -8,6 +8,7 @@ namespace WebApi.Data
 		public WebApiContext(DbContextOptions<WebApiContext> options)
 			: base(options)
 		{
+			Database.Migrate();
 		}
 
 		public DbSet<User> User { get; set; } = default!;

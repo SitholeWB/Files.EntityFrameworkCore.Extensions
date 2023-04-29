@@ -1,124 +1,70 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Files.EntityFrameworkCore.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using WebApi.Commands;
 using WebApi.Data;
 using WebApi.Entities;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UserImagesController : ControllerBase
-    {
-        private readonly WebApiContext _context;
+	[Route("api/[controller]")]
+	[ApiController]
+	public class UserImagesController : ControllerBase
+	{
+		private readonly WebApiContext _context;
 
-        public UserImagesController(WebApiContext context)
-        {
-            _context = context;
-        }
+		public UserImagesController(WebApiContext context)
+		{
+			_context = context;
+		}
 
-        // GET: api/UserImages
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserImage>>> GetUserImage()
-        {
-          if (_context.UserImage == null)
-          {
-              return NotFound();
-          }
-            return await _context.UserImage.ToListAsync();
-        }
+		//Example from https://dottutorials.net/dotnet-core-web-api-multipart-form-data-upload-file/
+		[HttpPost]
+		[DisableRequestSizeLimit]
+		public async Task<ActionResult<FilesExtensionsResponse>> UploadFile([FromForm] UploadCommand uploadCommand)
+		{
+			var file = uploadCommand.File;
+			if (file.Length > 0)
+			{
+				var fileDetails = await _context.SaveFileAsync<UserImage>(file.OpenReadStream(), file.FileName, file.ContentType);
+				await _context.SaveChangesAsync();
+				return Ok(fileDetails);
+			}
+			else
+			{
+				return BadRequest("File is required.");
+			}
+		}
 
-        // GET: api/UserImages/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<UserImage>> GetUserImage(Guid id)
-        {
-          if (_context.UserImage == null)
-          {
-              return NotFound();
-          }
-            var userImage = await _context.UserImage.FindAsync(id);
+		[HttpGet("{id}")]
+		public async Task<IActionResult> DownLoadFile(Guid id)
+		{
+			var response = await _context.GetFileStreamAsync<UserImage>(id);
+			return File(response.Stream, response.MimeType, response.Name);
+		}
 
-            if (userImage == null)
-            {
-                return NotFound();
-            }
+		// DELETE: api/UserImages/5
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteUserImage(Guid id)
+		{
+			if (_context.UserImage == null)
+			{
+				return NotFound();
+			}
+			var userImage = await _context.UserImage.FindAsync(id);
+			if (userImage == null)
+			{
+				return NotFound();
+			}
 
-            return userImage;
-        }
+			_context.UserImage.Remove(userImage);
+			await _context.SaveChangesAsync();
 
-        // PUT: api/UserImages/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUserImage(Guid id, UserImage userImage)
-        {
-            if (id != userImage.Id)
-            {
-                return BadRequest();
-            }
+			return NoContent();
+		}
 
-            _context.Entry(userImage).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserImageExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/UserImages
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<UserImage>> PostUserImage(UserImage userImage)
-        {
-          if (_context.UserImage == null)
-          {
-              return Problem("Entity set 'WebApiContext.UserImage'  is null.");
-          }
-            _context.UserImage.Add(userImage);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetUserImage", new { id = userImage.Id }, userImage);
-        }
-
-        // DELETE: api/UserImages/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUserImage(Guid id)
-        {
-            if (_context.UserImage == null)
-            {
-                return NotFound();
-            }
-            var userImage = await _context.UserImage.FindAsync(id);
-            if (userImage == null)
-            {
-                return NotFound();
-            }
-
-            _context.UserImage.Remove(userImage);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool UserImageExists(Guid id)
-        {
-            return (_context.UserImage?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
-    }
+		private bool UserImageExists(Guid id)
+		{
+			return (_context.UserImage?.Any(e => e.Id == id)).GetValueOrDefault();
+		}
+	}
 }
