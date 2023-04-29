@@ -8,15 +8,15 @@ namespace Files.EntityFrameworkCore.Extensions
 {
 	public static class AsyncFilesExtensions
 	{
-		public static async Task<IFileEntity> GetFileAsync<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
+		public static async Task<IFileEntity> GetFileInfoAsync<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
 		{
-			return await dbContext.Set<T>().FindAsync(id);
+			return await dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
 		}
 
 		public static async Task<FilesExtensionsResponse> GetFileStreamAsync<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
 		{
 			var response = new FilesExtensionsResponse { };
-			var mainFile = dbContext.Set<T>().Find(id);
+			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
 			if (mainFile == null)
 			{
 				return response;
@@ -25,17 +25,40 @@ namespace Files.EntityFrameworkCore.Extensions
 			response.Name = mainFile.Name;
 			response.MimeType = mainFile.MimeType;
 			response.Stream = new MemoryStream();
-
 			await response.Stream.WriteAsync(mainFile.Data, 0, mainFile.ChunkBytesLength);
 			var nextId = mainFile.NextId;
 			while (mainFile.NextId.HasValue)
 			{
-				mainFile = dbContext.Set<T>().Find(nextId);
+				mainFile = await dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == nextId);
 				await response.Stream.WriteAsync(mainFile.Data, 0, mainFile.ChunkBytesLength);
 				nextId = mainFile.NextId;
 			}
-			response.Stream.Position = 0;
 			return response;
+		}
+
+		public static async Task DownloadFileToStreamAsync<T>(this DbContext dbContext, Guid id, Stream outputStream) where T : class, IFileEntity
+		{
+			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+			if (mainFile == null)
+			{
+				throw new FileNotFoundException();
+			}
+			await outputStream.WriteAsync(mainFile.Data, 0, mainFile.ChunkBytesLength);
+			var nextId = mainFile.NextId;
+			while (mainFile.NextId.HasValue)
+			{
+				mainFile = await dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == nextId);
+				await outputStream.WriteAsync(mainFile.Data, 0, mainFile.ChunkBytesLength);
+				nextId = mainFile.NextId;
+			}
+			try
+			{
+				outputStream.Position = 0;
+			}
+			catch
+			{
+				//Other streams may block the setting of this, so don't break. Allow caller to handle position
+			}
 		}
 
 		public static async Task<Guid> SaveFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null) where T : class, IFileEntity, new()

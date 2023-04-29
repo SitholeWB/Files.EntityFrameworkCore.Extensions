@@ -38,8 +38,19 @@ namespace WebApi.Controllers
 		[HttpGet("{id}")]
 		public async Task<IActionResult> DownLoadFile(Guid id)
 		{
-			var response = await _context.GetFileStreamAsync<UserImage>(id);
-			return File(response.Stream, response.MimeType, response.Name);
+			var fileDetails = await _context.GetFileInfoAsync<UserImage>(id);
+			var stream = new MemoryStream();
+			await _context.DownloadFileToStreamAsync<UserImage>(id, stream);
+			return File(stream, fileDetails.MimeType, fileDetails.Name);
+		}
+
+		[HttpGet("{id}/view")]
+		public async Task<FileStreamResult> DownloadView(Guid id)
+		{
+			var fileDetails = await _context.GetFileInfoAsync<UserImage>(id);
+			var stream = new MemoryStream();
+			await _context.DownloadFileToStreamAsync<UserImage>(id, stream);
+			return new FileStreamResult(stream, fileDetails.MimeType);
 		}
 
 		// DELETE: api/UserImages/5
