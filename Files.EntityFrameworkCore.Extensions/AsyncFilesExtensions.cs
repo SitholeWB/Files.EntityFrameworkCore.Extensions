@@ -162,8 +162,8 @@ namespace Files.EntityFrameworkCore.Extensions
 
 		/// <summary>
 		/// The DbContext method "SaveChangesAsync()" will NOT be called after every chunk, this
-		/// will cause Entity Framework to keep so many large chunks in-memory. 
-		/// You must explicitly call the SaveChangesAsync()
+		/// will cause Entity Framework to keep so many large chunks in-memory. You must explicitly
+		/// call the SaveChangesAsync()
 		/// NOTE: Default chunk size = 64k
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
@@ -173,6 +173,7 @@ namespace Files.EntityFrameworkCore.Extensions
 		/// <param name="mimeType"></param>
 		/// <param name="fileId"></param>
 		/// <param name="chunkSize"></param>
+		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		public static async Task<Guid> AddFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
 		{
@@ -191,6 +192,7 @@ namespace Files.EntityFrameworkCore.Extensions
 		/// <param name="mimeType"></param>
 		/// <param name="fileId"></param>
 		/// <param name="chunkSize"></param>
+		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		public static async Task<Guid> SaveFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
 		{
