@@ -68,7 +68,6 @@ namespace Files.EntityFrameworkCore.Extensions
 		private static Guid AddOrSaveFileHelper<T>(DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, bool eagerSave = false) where T : class, IFileEntity, new()
 		{
 			var bufferLen = (chunkSize.HasValue && chunkSize.Value > 0) ? chunkSize.Value : FileHelper.DEFAULT_MAX_CHUNK_SIZE;
-			var initialBufferLen = bufferLen;
 			var nextId = Guid.NewGuid();
 			if (!fileId.HasValue || fileId.Value.Equals(Guid.Empty))
 			{
@@ -76,7 +75,6 @@ namespace Files.EntityFrameworkCore.Extensions
 			}
 
 			var isFirstSave = true;
-			var hasNext = true;
 			do
 			{
 				var buffer = new byte[bufferLen];
@@ -116,20 +114,16 @@ namespace Files.EntityFrameworkCore.Extensions
 					tempT.Id = fileId.Value;
 					isFirstSave = false;
 				}
-				if ((stream.Length - stream.Position) > initialBufferLen)
+				if (stream.Length != stream.Position)
 				{
 					tempT.NextId = nextId;
-				}
-				else
-				{
-					hasNext = false;
 				}
 				dbContext.Add(tempT);
 				if (eagerSave)
 				{
 					dbContext.SaveChanges();
 				}
-			} while (hasNext);
+			} while (stream.Length != stream.Position);
 
 			return fileId.Value;
 		}

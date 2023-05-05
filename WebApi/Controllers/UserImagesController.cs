@@ -6,7 +6,7 @@ using WebApi.Entities;
 
 namespace WebApi.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api/user-images")]
 	[ApiController]
 	public class UserImagesController : ControllerBase
 	{
@@ -25,7 +25,7 @@ namespace WebApi.Controllers
 			var file = uploadCommand.File;
 			if (file.Length > 0)
 			{
-				var fileDetails = await _context.AddFileAsync<UserImage>(file.OpenReadStream(), file.FileName, file.ContentType, chunkSize: 975467);
+				var fileDetails = await _context.AddFileAsync<UserImage>(file.OpenReadStream(), file.FileName, file.ContentType);
 				await _context.SaveChangesAsync();
 				return Ok(fileDetails);
 			}
