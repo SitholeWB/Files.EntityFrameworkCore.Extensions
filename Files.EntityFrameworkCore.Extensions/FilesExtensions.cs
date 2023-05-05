@@ -76,6 +76,7 @@ namespace Files.EntityFrameworkCore.Extensions
 			}
 
 			var isFirstSave = true;
+			var hasNext = true;
 			do
 			{
 				var buffer = new byte[bufferLen];
@@ -107,7 +108,7 @@ namespace Files.EntityFrameworkCore.Extensions
 
 				nextId = Guid.NewGuid();
 
-				var bytesRead = stream.Read(buffer, 0, buffer.Length);
+				stream.Read(buffer, 0, buffer.Length);
 				tempT.Data = buffer;
 
 				if (isFirstSave)
@@ -115,16 +116,20 @@ namespace Files.EntityFrameworkCore.Extensions
 					tempT.Id = fileId.Value;
 					isFirstSave = false;
 				}
-				if (bytesRead == initialBufferLen)
+				if ((stream.Length - stream.Position) > initialBufferLen)
 				{
 					tempT.NextId = nextId;
+				}
+				else
+				{
+					hasNext = false;
 				}
 				dbContext.Add(tempT);
 				if (eagerSave)
 				{
 					dbContext.SaveChanges();
 				}
-			} while (true);
+			} while (hasNext);
 
 			return fileId.Value;
 		}
