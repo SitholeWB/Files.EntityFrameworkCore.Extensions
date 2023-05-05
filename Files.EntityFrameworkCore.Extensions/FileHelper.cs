@@ -2,6 +2,6 @@
 {
 	public struct FileHelper
 	{
-		public static int MAX_CHUNK_SIZE => 350000;
+		public static int DEFAULT_MAX_CHUNK_SIZE => 65536; //~64k
 	}
 }

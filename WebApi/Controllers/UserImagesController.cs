@@ -25,7 +25,7 @@ namespace WebApi.Controllers
 			var file = uploadCommand.File;
 			if (file.Length > 0)
 			{
-				var fileDetails = await _context.SaveFileAsync<UserImage>(file.OpenReadStream(), file.FileName, file.ContentType);
+				var fileDetails = await _context.AddFileAsync<UserImage>(file.OpenReadStream(), file.FileName, file.ContentType);
 				await _context.SaveChangesAsync();
 				return Ok(fileDetails);
 			}

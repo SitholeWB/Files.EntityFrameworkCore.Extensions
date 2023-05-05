@@ -1,18 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
-using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Files.EntityFrameworkCore.Extensions
 {
 	public static class AsyncFilesExtensions
 	{
-		public static async Task<IFileEntity> GetFileInfoAsync<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
+		public static async Task<IFileEntity> GetFileInfoAsync<T>(this DbContext dbContext, Guid id, CancellationToken cancellationToken = default) where T : class, IFileEntity
 		{
-			return await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id);
+			return await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id, cancellationToken);
 		}
 
+		/*
 		public static async Task<FilesExtensionsResponse> GetFileStreamAsync<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
 		{
 			var response = new FilesExtensionsResponse { };
@@ -40,25 +41,26 @@ namespace Files.EntityFrameworkCore.Extensions
 			}
 			return response;
 		}
+		*/
 
-		public static async Task DownloadFileToStreamAsync<T>(this DbContext dbContext, Guid id, Stream outputStream) where T : class, IFileEntity
+		public static async Task DownloadFileToStreamAsync<T>(this DbContext dbContext, Guid id, Stream outputStream, CancellationToken cancellationToken = default) where T : class, IFileEntity
 		{
-			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id);
+			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id, cancellationToken);
 			if (mainFile == null)
 			{
 				throw new FileNotFoundException();
 			}
-			await outputStream.WriteAsync(mainFile.Data, 0, mainFile.ChunkBytesLength);
+			await outputStream.WriteAsync(mainFile.Data, 0, mainFile.ChunkBytesLength, cancellationToken);
 			var nextId = mainFile.NextId;
 			while (mainFile.NextId.HasValue)
 			{
-				mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == nextId);
+				mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == nextId, cancellationToken);
 				if (mainFile == null)
 				{
 					//Should never be null but someone might mess up with chunks in the database
 					break;
 				}
-				await outputStream.WriteAsync(mainFile.Data, 0, mainFile.ChunkBytesLength);
+				await outputStream.WriteAsync(mainFile.Data, 0, mainFile.ChunkBytesLength, cancellationToken);
 				nextId = mainFile.NextId;
 			}
 			try
@@ -71,9 +73,9 @@ namespace Files.EntityFrameworkCore.Extensions
 			}
 		}
 
-		public static async Task DeleteFileAsync<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
+		public static async Task DeleteFileAsync<T>(this DbContext dbContext, Guid id, CancellationToken cancellationToken = default) where T : class, IFileEntity
 		{
-			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id);
+			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id, cancellationToken);
 			if (mainFile == null)
 			{
 				throw new FileNotFoundException();
@@ -83,7 +85,7 @@ namespace Files.EntityFrameworkCore.Extensions
 			var nextId = mainFile.NextId;
 			while (mainFile.NextId.HasValue)
 			{
-				mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == nextId);
+				mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == nextId, cancellationToken);
 				if (mainFile == null)
 				{
 					//Should never be null but someone might mess up with chunks in the database
@@ -94,11 +96,10 @@ namespace Files.EntityFrameworkCore.Extensions
 			}
 		}
 
-		public static async Task<Guid> SaveFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null) where T : class, IFileEntity, new()
+		private static async Task<Guid> AddOrSaveFileHelperAsync<T>(DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, bool eagerSave = false, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
 		{
-			var bufferLen = (chunkSize.HasValue && chunkSize.Value > 0) ? chunkSize.Value : FileHelper.MAX_CHUNK_SIZE;
+			var bufferLen = (chunkSize.HasValue && chunkSize.Value > 0) ? chunkSize.Value : FileHelper.DEFAULT_MAX_CHUNK_SIZE;
 			var initialBufferLen = bufferLen;
-			var buffer = new byte[bufferLen];
 			var nextId = Guid.NewGuid();
 			if (!fileId.HasValue || fileId.Value.Equals(Guid.Empty))
 			{
@@ -106,15 +107,16 @@ namespace Files.EntityFrameworkCore.Extensions
 			}
 
 			var isFirstSave = true;
-			var bytesRead = 0;
-			long bytesCount = 0;
-			using var SHA_256 = SHA512.Create();
-
 			do
 			{
-				if ((bytesCount + bufferLen) > stream.Length)
+				var buffer = new byte[bufferLen];
+				if ((stream.Length - stream.Position) <= bufferLen)
 				{
-					bufferLen = (int)(stream.Length - bytesCount);
+					bufferLen = (int)(stream.Length - stream.Position);
+					if (bufferLen <= 0)
+					{
+						break;
+					}
 					buffer = new byte[bufferLen];
 				}
 
@@ -129,7 +131,6 @@ namespace Files.EntityFrameworkCore.Extensions
 					FileId = fileId.Value,
 					Name = name,
 					ChunkBytesLength = bufferLen,
-					Start = stream.Position,
 					MimeType = string.IsNullOrWhiteSpace(mimeType) ? "application/octet-stream" : mimeType,
 					TimeStamp = DateTimeOffset.UtcNow,
 					TotalBytesLength = stream.Length
@@ -137,9 +138,8 @@ namespace Files.EntityFrameworkCore.Extensions
 
 				nextId = Guid.NewGuid();
 
-				bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+				var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
 				tempT.Data = buffer;
-				tempT.Hash = BitConverter.ToString(SHA_256.ComputeHash(buffer)).Replace("-", "");
 
 				if (isFirstSave)
 				{
@@ -150,11 +150,51 @@ namespace Files.EntityFrameworkCore.Extensions
 				{
 					tempT.NextId = nextId;
 				}
-				bytesCount += bufferLen;
 				dbContext.Add(tempT);
+				if (eagerSave)
+				{
+					await dbContext.SaveChangesAsync(cancellationToken);
+				}
 			} while (true);
 
 			return fileId.Value;
+		}
+
+		/// <summary>
+		/// The DbContext method "SaveChangesAsync()" will NOT be called after every chunk, this
+		/// will cause Entity Framework to keep so many large chunks in-memory. 
+		/// You must explicitly call the SaveChangesAsync()
+		/// NOTE: Default chunk size = 64k
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="dbContext"></param>
+		/// <param name="stream"></param>
+		/// <param name="name"></param>
+		/// <param name="mimeType"></param>
+		/// <param name="fileId"></param>
+		/// <param name="chunkSize"></param>
+		/// <returns></returns>
+		public static async Task<Guid> AddFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
+		{
+			return await AddOrSaveFileHelperAsync<T>(dbContext, stream, name, mimeType, fileId, chunkSize, false, cancellationToken);
+		}
+
+		/// <summary>
+		/// The DbContext method "SaveChangesAsync()" will be called after every chunk, this is
+		/// important if you want to avoid Entity Framework keeping so many large chunks in-memory.
+		/// NOTE: Default chunk size = 64k
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="dbContext"></param>
+		/// <param name="stream"></param>
+		/// <param name="name"></param>
+		/// <param name="mimeType"></param>
+		/// <param name="fileId"></param>
+		/// <param name="chunkSize"></param>
+		/// <returns></returns>
+		public static async Task<Guid> SaveFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
+		{
+			return await AddOrSaveFileHelperAsync<T>(dbContext, stream, name, mimeType, fileId, chunkSize, true, cancellationToken);
 		}
 	}
 }

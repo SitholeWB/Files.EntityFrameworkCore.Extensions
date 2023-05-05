@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace WebApi.Migrations
 {
-    public partial class MyFirstMigration : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -35,10 +35,8 @@ namespace WebApi.Migrations
                     FileId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MimeType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Hash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TimeStamp = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     NextId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Start = table.Column<long>(type: "bigint", nullable: false),
                     ChunkBytesLength = table.Column<int>(type: "int", nullable: false),
                     TotalBytesLength = table.Column<long>(type: "bigint", nullable: false),
                     Data = table.Column<byte[]>(type: "varbinary(max)", nullable: false)

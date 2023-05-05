@@ -74,10 +74,6 @@ namespace WebApi.Migrations
                     b.Property<Guid>("FileId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Hash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -88,9 +84,6 @@ namespace WebApi.Migrations
 
                     b.Property<Guid?>("NextId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<long>("Start")
-                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("TimeStamp")
                         .HasColumnType("datetimeoffset");

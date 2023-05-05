@@ -12,8 +12,8 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(WebApiContext))]
-    [Migration("20230429125639_MyFirstMigration")]
-    partial class MyFirstMigration
+    [Migration("20230505161508_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -76,10 +76,6 @@ namespace WebApi.Migrations
                     b.Property<Guid>("FileId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Hash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -90,9 +86,6 @@ namespace WebApi.Migrations
 
                     b.Property<Guid?>("NextId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<long>("Start")
-                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("TimeStamp")
                         .HasColumnType("datetimeoffset");
