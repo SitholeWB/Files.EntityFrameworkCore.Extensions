@@ -35,7 +35,7 @@ namespace WebApi.Controllers
 			}
 		}
 
-		[HttpGet("{id}")]
+		[HttpGet("{id}/download")]
 		public async Task<IActionResult> DownLoadFile(Guid id)
 		{
 			var fileDetails = await _context.GetFileInfoAsync<UserImage>(id);
