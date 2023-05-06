@@ -61,6 +61,34 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response) > 0);
 		}
 
+		[Test]
+		public async Task SaveFileAsync_GivenValidInput_ShouldHaveFileIdOnAllAddedRows()
+		{
+			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
+			var inputText = lorem.Paragraphs(20);
+
+			var bytes = Encoding.ASCII.GetBytes(inputText);
+
+			var stream = new MemoryStream(bytes);
+			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
+
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId != response) == 0);
+		}
+
+		[Test]
+		public async Task AddFileAsync_GivenValidInput_ShouldHaveFileIdOnAllAddedRows()
+		{
+			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
+			var inputText = lorem.Paragraphs(20);
+
+			var bytes = Encoding.ASCII.GetBytes(inputText);
+
+			var stream = new MemoryStream(bytes);
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
+
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId != response) == 0);
+		}
+
 		private MyDbContext GetDatabaseContext()
 		{
 			var options = new DbContextOptionsBuilder<MyDbContext>()
