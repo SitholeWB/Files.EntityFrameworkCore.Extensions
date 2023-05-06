@@ -147,6 +147,58 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Name != filename) == 0);
 		}
 
+		[TestCase(20)]
+		[TestCase(30)]
+		[TestCase(40)]
+		[TestCase(100)]
+		[TestCase(500)]
+		[TestCase(1000)]
+		public async Task DownloadFileToStreamAsync_GivenValidInput_SaveFileAsync_ShouldDownloadMatchingWithInput(int paragraphs)
+		{
+			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
+			var inputText = lorem.Paragraphs(paragraphs);
+
+			var bytes = Encoding.ASCII.GetBytes(inputText);
+
+			var stream = new MemoryStream(bytes);
+			var filename = lorem.Word();
+			var chunkSize = new Random().Next(60) + 10;
+			var responseGuid = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+
+			var streamOutput = new MemoryStream();
+			await _dbContext.DownloadFileToStreamAsync<TextStreamEntity>(responseGuid, streamOutput);
+
+			var resultString = Encoding.ASCII.GetString(streamOutput.ToArray());
+
+			Assert.AreEqual(inputText, resultString);
+		}
+
+		[TestCase(20)]
+		[TestCase(30)]
+		[TestCase(40)]
+		[TestCase(100)]
+		[TestCase(500)]
+		[TestCase(1000)]
+		public async Task DownloadFileToStreamAsync_GivenValidInput_AddFileAsync_ShouldDownloadMatchingWithInput(int paragraphs)
+		{
+			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
+			var inputText = lorem.Paragraphs(paragraphs);
+
+			var bytes = Encoding.ASCII.GetBytes(inputText);
+
+			var stream = new MemoryStream(bytes);
+			var filename = lorem.Word();
+			var chunkSize = new Random().Next(60) + 10;
+			var responseGuid = await _dbContext.AddFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+			await _dbContext.SaveChangesAsync();
+			var streamOutput = new MemoryStream();
+			await _dbContext.DownloadFileToStreamAsync<TextStreamEntity>(responseGuid, streamOutput);
+
+			var resultString = Encoding.ASCII.GetString(streamOutput.ToArray());
+
+			Assert.AreEqual(inputText, resultString);
+		}
+
 		private MyDbContext GetDatabaseContext()
 		{
 			var options = new DbContextOptionsBuilder<MyDbContext>()
