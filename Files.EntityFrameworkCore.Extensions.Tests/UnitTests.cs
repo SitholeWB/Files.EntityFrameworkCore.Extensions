@@ -85,8 +85,66 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 
 			var stream = new MemoryStream(bytes);
 			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
-
+			await _dbContext.SaveChangesAsync();
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId != response) == 0);
+		}
+
+		[Test]
+		public async Task AddFileAsync_GivenValidInput_ShouldSaveMimeType()
+		{
+			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
+			var inputText = lorem.Paragraphs(20);
+
+			var bytes = Encoding.ASCII.GetBytes(inputText);
+
+			var stream = new MemoryStream(bytes);
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
+			await _dbContext.SaveChangesAsync();
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.MimeType != "plain/text") == 0);
+		}
+
+		[Test]
+		public async Task SaveFileAsync_GivenValidInput_ShouldSaveMimeType()
+		{
+			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
+			var inputText = lorem.Paragraphs(20);
+
+			var bytes = Encoding.ASCII.GetBytes(inputText);
+
+			var stream = new MemoryStream(bytes);
+			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
+
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.MimeType != "plain/text") == 0);
+		}
+
+		[Test]
+		public async Task SaveFileAsync_GivenValidInput_ShouldSaveName()
+		{
+			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
+			var inputText = lorem.Paragraphs(20);
+
+			var bytes = Encoding.ASCII.GetBytes(inputText);
+
+			var stream = new MemoryStream(bytes);
+			var filename = lorem.Word();
+			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7);
+
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Name != filename) == 0);
+		}
+
+		[Test]
+		public async Task AddFileAsync_GivenValidInput_ShouldSaveName()
+		{
+			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
+			var inputText = lorem.Paragraphs(20);
+
+			var bytes = Encoding.ASCII.GetBytes(inputText);
+
+			var stream = new MemoryStream(bytes);
+			var filename = lorem.Word();
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7);
+			await _dbContext.SaveChangesAsync();
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Name != filename) == 0);
 		}
 
 		private MyDbContext GetDatabaseContext()
