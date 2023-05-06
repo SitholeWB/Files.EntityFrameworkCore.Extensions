@@ -3,6 +3,15 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>Welcome Sithole</Authors>
+    <Company />
+    <PackageProjectUrl>https://github.com/SitholeWB/Files.EntityFrameworkCore.Extensions</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SitholeWB/Files.EntityFrameworkCore.Extensionshttps://github.com/SitholeWB/Files.EntityFrameworkCore.Extensions</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>files;Entity Framework;storage;blob;bytes;documents</PackageTags>
+    <Version>2.0.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
