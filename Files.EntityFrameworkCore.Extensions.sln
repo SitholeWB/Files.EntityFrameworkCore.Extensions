@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi", "WebApi\WebApi.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Files.EntityFrameworkCore.Extensions.Tests", "Files.EntityFrameworkCore.Extensions.Tests\Files.EntityFrameworkCore.Extensions.Tests.csproj", "{03BD51BE-3E65-4166-9E29-DB57638461E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySql.WebApi", "MySql.WebApi\MySql.WebApi.csproj", "{5BDE025B-A9BE-4020-89FB-74136B4766ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,12 +31,17 @@ Global
 		{03BD51BE-3E65-4166-9E29-DB57638461E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03BD51BE-3E65-4166-9E29-DB57638461E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03BD51BE-3E65-4166-9E29-DB57638461E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BDE025B-A9BE-4020-89FB-74136B4766ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BDE025B-A9BE-4020-89FB-74136B4766ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BDE025B-A9BE-4020-89FB-74136B4766ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BDE025B-A9BE-4020-89FB-74136B4766ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{AA1D6BA4-555F-44E4-AB38-03307D42E5F8} = {5289D317-A243-409C-B8EE-12FAD598AB02}
+		{5BDE025B-A9BE-4020-89FB-74136B4766ED} = {5289D317-A243-409C-B8EE-12FAD598AB02}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {784505FC-1881-4A36-A725-2A2A740D2AC6}
