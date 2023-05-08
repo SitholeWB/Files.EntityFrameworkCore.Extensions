@@ -50,7 +50,7 @@ namespace WebApi.Controllers
 			var fileDetails = await _context.GetFileInfoAsync<UserImage>(id);
 			var stream = new MemoryStream();
 			await _context.DownloadFileToStreamAsync<UserImage>(id, stream);
-			return new FileStreamResult(stream, fileDetails.MimeType);
+			return File(stream, fileDetails.MimeType);
 		}
 
 		// DELETE: api/UserImages/5
