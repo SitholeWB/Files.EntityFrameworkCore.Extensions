@@ -4,15 +4,16 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Files.EntityFrameworkCore.Extensions.Tests
 {
-	public class UnitTests
+	public class AsyncUnitTests
 	{
 		private MyDbContext _dbContext;
 
 		[SetUp]
-		public void Setup()
+		public async Task Setup()
 		{
 			_dbContext = GetDatabaseContext();
 		}
@@ -21,7 +22,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void AddFile_GivenValidInput_And_Invoke_SaveChanges_ShouldSaveChangesToDatabase(int paragraphs)
+		public async Task AddFileAsync_GivenValidInput_And_Invoke_SaveChangesAsync_ShouldSaveChangesToDatabase(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -29,8 +30,9 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var bytes = Encoding.ASCII.GetBytes(inputText);
 
 			var stream = new MemoryStream(bytes);
-			var response = _dbContext.AddFile<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
-			_dbContext.SaveChanges();
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
+			await _dbContext.SaveChangesAsync();
+
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response) > 0);
 		}
 
@@ -38,7 +40,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void AddFile_GivenValidInput_And_WithoutInvoke_SaveChanges_ShouldNotSaveChangesToDatabase(int paragraphs)
+		public async Task AddFileAsync_GivenValidInput_And_WithoutInvoke_SaveChangesAsync_ShouldNotSaveChangesToDatabase(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -46,7 +48,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var bytes = Encoding.ASCII.GetBytes(inputText);
 
 			var stream = new MemoryStream(bytes);
-			var response = _dbContext.AddFile<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
 
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response) == 0);
 		}
@@ -55,7 +57,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void SaveFile_GivenValidInput_And_WithoutInvoke_SaveChanges_ShouldSaveChangesToDatabase(int paragraphs)
+		public async Task SaveFileAsync_GivenValidInput_And_WithoutInvoke_SaveChangesAsync_ShouldSaveChangesToDatabase(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -63,7 +65,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var bytes = Encoding.ASCII.GetBytes(inputText);
 
 			var stream = new MemoryStream(bytes);
-			var response = _dbContext.SaveFile<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
+			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
 
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response) > 0);
 		}
@@ -72,7 +74,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void SaveFile_GivenValidInput_ShouldHaveFileIdOnAllAddedRows(int paragraphs)
+		public async Task SaveFileAsync_GivenValidInput_ShouldHaveFileIdOnAllAddedRows(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -80,13 +82,13 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var bytes = Encoding.ASCII.GetBytes(inputText);
 
 			var stream = new MemoryStream(bytes);
-			var response = _dbContext.SaveFile<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
+			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
 
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId != response) == 0);
 		}
 
 		[Test]
-		public void AddFile_GivenValidInput_ShouldHaveFileIdOnAllAddedRows()
+		public async Task AddFileAsync_GivenValidInput_ShouldHaveFileIdOnAllAddedRows()
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(20);
@@ -94,8 +96,8 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var bytes = Encoding.ASCII.GetBytes(inputText);
 
 			var stream = new MemoryStream(bytes);
-			var response = _dbContext.AddFile<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
-			_dbContext.SaveChanges();
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
+			await _dbContext.SaveChangesAsync();
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId != response) == 0);
 		}
 
@@ -103,7 +105,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void AddFile_GivenValidInput_ShouldSaveMimeType(int paragraphs)
+		public async Task AddFileAsync_GivenValidInput_ShouldSaveMimeType(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -111,8 +113,8 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var bytes = Encoding.ASCII.GetBytes(inputText);
 
 			var stream = new MemoryStream(bytes);
-			var response = _dbContext.AddFile<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
-			_dbContext.SaveChanges();
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
+			await _dbContext.SaveChangesAsync();
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.MimeType != "plain/text") == 0);
 		}
 
@@ -120,7 +122,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void SaveFile_GivenValidInput_ShouldSaveMimeType(int paragraphs)
+		public async Task SaveFileAsync_GivenValidInput_ShouldSaveMimeType(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -128,7 +130,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var bytes = Encoding.ASCII.GetBytes(inputText);
 
 			var stream = new MemoryStream(bytes);
-			var response = _dbContext.SaveFile<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
+			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
 
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.MimeType != "plain/text") == 0);
 		}
@@ -137,7 +139,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void SaveFile_GivenValidInput_ShouldSaveName(int paragraphs)
+		public async Task SaveFileAsync_GivenValidInput_ShouldSaveName(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -146,7 +148,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
-			var response = _dbContext.SaveFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7);
+			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7);
 
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Name != filename) == 0);
 		}
@@ -155,7 +157,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void SaveFile_GivenValidInput_ShouldSaveChunkSize(int paragraphs)
+		public async Task SaveFileAsync_GivenValidInput_ShouldSaveChunkSize(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -164,7 +166,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
-			var response = _dbContext.SaveFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7);
+			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7);
 
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.ChunkBytesLength == 7) > 0);
 		}
@@ -173,7 +175,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void AddFile_GivenValidInput_ShouldSaveChunkSize(int paragraphs)
+		public async Task AddFileAsync_GivenValidInput_ShouldSaveChunkSize(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -182,8 +184,8 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
-			var response = _dbContext.AddFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7);
-			_dbContext.SaveChanges();
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7);
+			await _dbContext.SaveChangesAsync();
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.ChunkBytesLength == 7) > 0);
 		}
 
@@ -191,7 +193,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void SaveFile_GivenValidInput_ShouldSaveGivenId(int paragraphs)
+		public async Task SaveFileAsync_GivenValidInput_ShouldSaveGivenId(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -201,7 +203,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
 			var id = Guid.NewGuid();
-			var response = _dbContext.SaveFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7, fileId: id);
+			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7, fileId: id);
 
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == id) > 0);
 		}
@@ -210,7 +212,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void AddFile_GivenValidInput_ShouldSaveGivenId(int paragraphs)
+		public async Task AddFileAsync_GivenValidInput_ShouldSaveGivenId(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -220,8 +222,8 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
 			var id = Guid.NewGuid();
-			var response = _dbContext.AddFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7, fileId: id);
-			_dbContext.SaveChanges();
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7, fileId: id);
+			await _dbContext.SaveChangesAsync();
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == id) > 0);
 		}
 
@@ -229,7 +231,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void AddFile_GivenValidInput_ShouldSaveName(int paragraphs)
+		public async Task AddFileAsync_GivenValidInput_ShouldSaveName(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -238,8 +240,8 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
-			var response = _dbContext.AddFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7);
-			_dbContext.SaveChanges();
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: 7);
+			await _dbContext.SaveChangesAsync();
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Name != filename) == 0);
 		}
 
@@ -249,7 +251,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(100)]
 		[TestCase(500)]
 		[TestCase(1000)]
-		public void DownloadFileToStream_GivenValidInput_SaveFile_ShouldDownloadMatchingWithInput(int paragraphs)
+		public async Task DownloadFileToStreamAsync_GivenValidInput_SaveFileAsync_ShouldDownloadMatchingWithInput(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -259,10 +261,10 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
 			var chunkSize = new Random().Next(60) + 10;
-			var responseGuid = _dbContext.SaveFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+			var responseGuid = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
 
 			var streamOutput = new MemoryStream();
-			_dbContext.DownloadFileToStream<TextStreamEntity>(responseGuid, streamOutput);
+			await _dbContext.DownloadFileToStreamAsync<TextStreamEntity>(responseGuid, streamOutput);
 
 			var resultString = Encoding.ASCII.GetString(streamOutput.ToArray());
 
@@ -275,7 +277,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(100)]
 		[TestCase(500)]
 		[TestCase(1000)]
-		public void DownloadFileToStream_GivenValidInput_AddFile_ShouldDownloadMatchingWithInput(int paragraphs)
+		public async Task DownloadFileToStreamAsync_GivenValidInput_AddFileAsync_ShouldDownloadMatchingWithInput(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -285,10 +287,10 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
 			var chunkSize = new Random().Next(60) + 10;
-			var responseGuid = _dbContext.AddFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
-			_dbContext.SaveChanges();
+			var responseGuid = await _dbContext.AddFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+			await _dbContext.SaveChangesAsync();
 			var streamOutput = new MemoryStream();
-			_dbContext.DownloadFileToStream<TextStreamEntity>(responseGuid, streamOutput);
+			await _dbContext.DownloadFileToStreamAsync<TextStreamEntity>(responseGuid, streamOutput);
 
 			var resultString = Encoding.ASCII.GetString(streamOutput.ToArray());
 
@@ -299,7 +301,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(20)]
 		[TestCase(30)]
 		[TestCase(60)]
-		public void DeleteFile_GivenValidInput_SaveFile_ShouldDeleteAllChunksForGivenId(int paragraphs)
+		public async Task DeleteFileAsync_GivenValidInput_SaveFileAsync_ShouldDeleteAllChunksForGivenId(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -309,12 +311,12 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
 			var chunkSize = new Random().Next(60) + 10;
-			var responseGuid = _dbContext.SaveFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+			var responseGuid = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
 
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == responseGuid) > 0);
 
-			_dbContext.DeleteFile<TextStreamEntity>(responseGuid);
-			_dbContext.SaveChanges();
+			await _dbContext.DeleteFileAsync<TextStreamEntity>(responseGuid);
+			await _dbContext.SaveChangesAsync();
 
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == responseGuid) == 0);
 		}
@@ -323,7 +325,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(20)]
 		[TestCase(30)]
 		[TestCase(60)]
-		public void DeleteFile_GivenValidInput_AddFile_ShouldDeleteAllChunksForGivenId(int paragraphs)
+		public async Task DeleteFileAsync_GivenValidInput_AddFileAsync_ShouldDeleteAllChunksForGivenId(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -333,12 +335,12 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
 			var chunkSize = new Random().Next(60) + 10;
-			var responseGuid = _dbContext.AddFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
-			_dbContext.SaveChanges();
+			var responseGuid = await _dbContext.AddFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+			await _dbContext.SaveChangesAsync();
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == responseGuid) > 0);
 
-			_dbContext.DeleteFile<TextStreamEntity>(responseGuid);
-			_dbContext.SaveChanges();
+			await _dbContext.DeleteFileAsync<TextStreamEntity>(responseGuid);
+			await _dbContext.SaveChangesAsync();
 
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == responseGuid) == 0);
 		}
