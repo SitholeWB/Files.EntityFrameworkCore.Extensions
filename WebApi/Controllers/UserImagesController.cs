@@ -1,7 +1,9 @@
 ﻿using Files.EntityFrameworkCore.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApi.Commands;
 using WebApi.Data;
+using WebApi.DTOs;
 using WebApi.Entities;
 
 namespace WebApi.Controllers
@@ -51,6 +53,24 @@ namespace WebApi.Controllers
 			var stream = new MemoryStream();
 			await _context.DownloadFileToStreamAsync<UserImage>(id, stream);
 			return File(stream, fileDetails.MimeType);
+		}
+
+		[HttpGet]
+		public async Task<ActionResult<UserImageDto>> GetImages()
+		{
+			if (_context.UserImage == null)
+			{
+				return NotFound();
+			}
+			var carImages = await _context.UserImage.Where(x => x.Id == x.FileId).Select(x => new UserImageDto
+			{
+				FileId = x.FileId,
+				MimeType = x.MimeType,
+				Name = x.Name,
+				TimeStamp = x.TimeStamp,
+				TotalBytesLength = x.TotalBytesLength,
+			}).ToListAsync();
+			return Ok(carImages);
 		}
 
 		// DELETE: api/UserImages/5

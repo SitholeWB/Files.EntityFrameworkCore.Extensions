@@ -1,7 +1,9 @@
 ﻿using Files.EntityFrameworkCore.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MySql.WebApi.Commands;
 using MySql.WebApi.Data;
+using MySql.WebApi.DTOs;
 using MySql.WebApi.Entities;
 
 namespace MySql.WebApi.Controllers
@@ -51,6 +53,20 @@ namespace MySql.WebApi.Controllers
 			var stream = new MemoryStream();
 			await _context.DownloadFileToStreamAsync<CarImage>(id, stream);
 			return File(stream, fileDetails.MimeType);
+		}
+
+		[HttpGet]
+		public async Task<ActionResult<CarImageDto>> GetImages()
+		{
+			var carImages = await _context.CarImage.Where(x => x.Id == x.FileId).Select(x => new CarImageDto
+			{
+				FileId = x.FileId,
+				MimeType = x.MimeType,
+				Name = x.Name,
+				TimeStamp = x.TimeStamp,
+				TotalBytesLength = x.TotalBytesLength,
+			}).ToListAsync();
+			return Ok(carImages);
 		}
 
 		// DELETE: api/CarImages/5
