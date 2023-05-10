@@ -8,7 +8,7 @@ using MySql.WebApi.Entities;
 
 namespace MySql.WebApi.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api/car-images")]
 	[ApiController]
 	public class CarImagesController : ControllerBase
 	{
