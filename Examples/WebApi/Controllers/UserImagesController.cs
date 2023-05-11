@@ -1,6 +1,6 @@
 ﻿using Files.EntityFrameworkCore.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Pagination.EntityFrameworkCore.Extensions;
 using WebApi.Commands;
 using WebApi.Data;
 using WebApi.DTOs;
@@ -56,21 +56,30 @@ namespace WebApi.Controllers
 		}
 
 		[HttpGet]
-		public async Task<ActionResult<UserImageDto>> GetImages()
+		public async Task<ActionResult<PaginationAuto<UserImage, UserImageDto>>> GetImages(int page = 1, int limit = 20)
 		{
 			if (_context.UserImage == null)
 			{
 				return NotFound();
 			}
-			var carImages = await _context.UserImage.Where(x => x.Id == x.FileId).Select(x => new UserImageDto
+			if (page <= 0)
 			{
-				FileId = x.FileId,
-				MimeType = x.MimeType,
-				Name = x.Name,
-				TimeStamp = x.TimeStamp,
-				TotalBytesLength = x.TotalBytesLength,
-			}).ToListAsync();
+				page = 1;
+			}
+			var carImages = await _context.AsPaginationAsync<UserImage, UserImageDto>(page, limit, x => x.Id == x.FileId, ToDto);
 			return Ok(carImages);
+		}
+
+		private UserImageDto ToDto(UserImage userImage)
+		{
+			return new UserImageDto
+			{
+				FileId = userImage.FileId,
+				MimeType = userImage.MimeType,
+				Name = userImage.Name,
+				TimeStamp = userImage.TimeStamp,
+				TotalBytesLength = userImage.TotalBytesLength,
+			};
 		}
 
 		// DELETE: api/UserImages/5
