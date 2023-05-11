@@ -1,6 +1,6 @@
 ﻿using Files.EntityFrameworkCore.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Pagination.EntityFrameworkCore.Extensions;
 using SQLite.WebApi.Commands;
 using SQLite.WebApi.Data;
 using SQLite.WebApi.DTOs;
@@ -56,16 +56,17 @@ namespace SQLite.WebApi.Controllers
 		}
 
 		[HttpGet]
-		public async Task<ActionResult<FoodImageDto>> GetImages()
+		public async Task<ActionResult<PaginationAuto<FoodImage, FoodImageDto>>> GetImages(int page = 1, int limit = 20)
 		{
-			var foodImages = await _context.FoodImage.Where(x => x.Id == x.FileId).Select(x => new FoodImageDto
+			if (_context.FoodImage == null)
 			{
-				FileId = x.FileId,
-				MimeType = x.MimeType,
-				Name = x.Name,
-				TimeStamp = x.TimeStamp,
-				TotalBytesLength = x.TotalBytesLength,
-			}).ToListAsync();
+				return NotFound();
+			}
+			if (page <= 0)
+			{
+				page = 1;
+			}
+			var foodImages = await _context.AsPaginationAsync<FoodImage, FoodImageDto>(page, limit, x => x.Id == x.FileId, ToDto);
 			return Ok(foodImages);
 		}
 
@@ -87,6 +88,18 @@ namespace SQLite.WebApi.Controllers
 			await _context.SaveChangesAsync();
 
 			return NoContent();
+		}
+
+		private FoodImageDto ToDto(FoodImage foodImage)
+		{
+			return new FoodImageDto
+			{
+				FileId = foodImage.FileId,
+				MimeType = foodImage.MimeType,
+				Name = foodImage.Name,
+				TimeStamp = foodImage.TimeStamp,
+				TotalBytesLength = foodImage.TotalBytesLength,
+			};
 		}
 	}
 }
