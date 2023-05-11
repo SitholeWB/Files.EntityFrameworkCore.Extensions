@@ -22,6 +22,11 @@ Install-Package Files.EntityFrameworkCore.Extensions
 		public long TotalBytesLength { get; set; }
 		public byte[] Data { get; set; }
 	}
+	
+	public class UploadCommand
+	{
+		public IFormFile File { get; set; }
+	}
   
   	public class WebApiContext : DbContext
 	{
