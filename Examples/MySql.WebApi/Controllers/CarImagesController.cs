@@ -1,10 +1,10 @@
 ﻿using Files.EntityFrameworkCore.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MySql.WebApi.Commands;
 using MySql.WebApi.Data;
 using MySql.WebApi.DTOs;
 using MySql.WebApi.Entities;
+using Pagination.EntityFrameworkCore.Extensions;
 
 namespace MySql.WebApi.Controllers
 {
@@ -56,16 +56,17 @@ namespace MySql.WebApi.Controllers
 		}
 
 		[HttpGet]
-		public async Task<ActionResult<CarImageDto>> GetImages()
+		public async Task<ActionResult<PaginationAuto<CarImage, CarImageDto>>> GetImages(int page = 1, int limit = 20)
 		{
-			var carImages = await _context.CarImage.Where(x => x.Id == x.FileId).Select(x => new CarImageDto
+			if (_context.CarImage == null)
 			{
-				FileId = x.FileId,
-				MimeType = x.MimeType,
-				Name = x.Name,
-				TimeStamp = x.TimeStamp,
-				TotalBytesLength = x.TotalBytesLength,
-			}).ToListAsync();
+				return NotFound();
+			}
+			if (page <= 0)
+			{
+				page = 1;
+			}
+			var carImages = await _context.AsPaginationAsync<CarImage, CarImageDto>(page, limit, x => x.Id == x.FileId, ToDto);
 			return Ok(carImages);
 		}
 
@@ -87,6 +88,18 @@ namespace MySql.WebApi.Controllers
 			await _context.SaveChangesAsync();
 
 			return NoContent();
+		}
+
+		private CarImageDto ToDto(CarImage carImage)
+		{
+			return new CarImageDto
+			{
+				FileId = carImage.FileId,
+				MimeType = carImage.MimeType,
+				Name = carImage.Name,
+				TimeStamp = carImage.TimeStamp,
+				TotalBytesLength = carImage.TotalBytesLength,
+			};
 		}
 	}
 }

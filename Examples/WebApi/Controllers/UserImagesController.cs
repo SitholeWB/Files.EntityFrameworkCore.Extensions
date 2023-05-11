@@ -66,20 +66,8 @@ namespace WebApi.Controllers
 			{
 				page = 1;
 			}
-			var carImages = await _context.AsPaginationAsync<UserImage, UserImageDto>(page, limit, x => x.Id == x.FileId, ToDto);
-			return Ok(carImages);
-		}
-
-		private UserImageDto ToDto(UserImage userImage)
-		{
-			return new UserImageDto
-			{
-				FileId = userImage.FileId,
-				MimeType = userImage.MimeType,
-				Name = userImage.Name,
-				TimeStamp = userImage.TimeStamp,
-				TotalBytesLength = userImage.TotalBytesLength,
-			};
+			var userImages = await _context.AsPaginationAsync<UserImage, UserImageDto>(page, limit, x => x.Id == x.FileId, ToDto);
+			return Ok(userImages);
 		}
 
 		// DELETE: api/UserImages/5
@@ -100,6 +88,18 @@ namespace WebApi.Controllers
 			await _context.SaveChangesAsync();
 
 			return NoContent();
+		}
+
+		private UserImageDto ToDto(UserImage userImage)
+		{
+			return new UserImageDto
+			{
+				FileId = userImage.FileId,
+				MimeType = userImage.MimeType,
+				Name = userImage.Name,
+				TimeStamp = userImage.TimeStamp,
+				TotalBytesLength = userImage.TotalBytesLength,
+			};
 		}
 	}
 }
