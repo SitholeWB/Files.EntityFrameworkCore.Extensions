@@ -311,14 +311,14 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
 			var chunkSize = new Random().Next(60) + 10;
-			var responseGuid = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
 
-			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == responseGuid) > 0);
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == response.Id) > 0);
 
-			await _dbContext.DeleteFileAsync<TextStreamEntity>(responseGuid);
+			await _dbContext.DeleteFileAsync<TextStreamEntity>(response.Id);
 			await _dbContext.SaveChangesAsync();
 
-			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == responseGuid) == 0);
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == response.Id) == 0);
 		}
 
 		[TestCase(10)]

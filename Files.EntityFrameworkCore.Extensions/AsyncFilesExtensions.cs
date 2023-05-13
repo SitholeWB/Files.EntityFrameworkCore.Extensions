@@ -131,7 +131,7 @@ namespace Files.EntityFrameworkCore.Extensions
 			}
 		}
 
-		private static async Task<Guid> AddOrSaveFileHelperAsync<T>(DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, bool eagerSave = false, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
+		private static async Task<FilesExtensionsResponse> AddOrSaveFileHelperAsync<T>(DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, bool eagerSave = false, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
 		{
 			var bufferLen = (chunkSize.HasValue && chunkSize.Value > 0) ? chunkSize.Value : FileHelper.DEFAULT_MAX_CHUNK_SIZE;
 			var nextId = Guid.NewGuid();
@@ -139,7 +139,7 @@ namespace Files.EntityFrameworkCore.Extensions
 			{
 				fileId = Guid.NewGuid();
 			}
-
+			var filesExtensionsResponse = default(FilesExtensionsResponse);
 			var isFirstSave = true;
 			do
 			{
@@ -179,6 +179,14 @@ namespace Files.EntityFrameworkCore.Extensions
 				{
 					tempT.Id = fileId.Value;
 					isFirstSave = false;
+					filesExtensionsResponse = new FilesExtensionsResponse
+					{
+						Id = fileId.Value,
+						Name = tempT.Name,
+						TotalBytesLength = tempT.TotalBytesLength,
+						MimeType = tempT.MimeType,
+						TimeStamp = tempT.TimeStamp
+					};
 				}
 				if (stream.Length != stream.Position)
 				{
@@ -191,7 +199,7 @@ namespace Files.EntityFrameworkCore.Extensions
 				}
 			} while (stream.Length != stream.Position);
 
-			return fileId.Value;
+			return filesExtensionsResponse;
 		}
 
 		/// <summary>
@@ -209,7 +217,7 @@ namespace Files.EntityFrameworkCore.Extensions
 		/// <param name="chunkSize"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public static async Task<Guid> AddFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
+		public static async Task<FilesExtensionsResponse> AddFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
 		{
 			return await AddOrSaveFileHelperAsync<T>(dbContext, stream, name, mimeType, fileId, chunkSize, false, cancellationToken);
 		}
@@ -228,7 +236,7 @@ namespace Files.EntityFrameworkCore.Extensions
 		/// <param name="chunkSize"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public static async Task<Guid> SaveFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
+		public static async Task<FilesExtensionsResponse> SaveFileAsync<T>(this DbContext dbContext, Stream stream, string name, string mimeType = "application/octet-stream", Guid? fileId = null, int? chunkSize = null, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
 		{
 			return await AddOrSaveFileHelperAsync<T>(dbContext, stream, name, mimeType, fileId, chunkSize, true, cancellationToken);
 		}
