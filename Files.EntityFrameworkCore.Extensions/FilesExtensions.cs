@@ -5,13 +5,39 @@ using System.Linq;
 
 namespace Files.EntityFrameworkCore.Extensions
 {
+	/// <summary>
+	/// Files Extensions
+	/// </summary>
 	public static class FilesExtensions
 	{
-		public static IFileEntity GetFileInfo<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
+		/// <summary>
+		/// Get the file info without bytes array
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="dbContext"></param>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		public static FilesExtensionsResponse GetFileInfo<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
 		{
-			return dbContext.Set<T>().FirstOrDefault<T>(x => x.Id == id);
+			return dbContext.Set<T>().Select(x => new FilesExtensionsResponse
+			{
+				Name = x.Name,
+				Id = x.Id,
+				MimeType = x.MimeType,
+				TimeStamp = x.TimeStamp,
+				TotalBytesLength = x.TotalBytesLength,
+			}).FirstOrDefault(x => x.Id == id);
 		}
 
+		/// <summary>
+		/// Download the file to given stream
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="dbContext"></param>
+		/// <param name="id">File Id</param>
+		/// <param name="outputStream">Stream to receive file</param>
+		/// <returns></returns>
+		/// <exception cref="FileNotFoundException"></exception>
 		public static void DownloadFileToStream<T>(this DbContext dbContext, Guid id, Stream outputStream) where T : class, IFileEntity
 		{
 			var mainFile = dbContext.Set<T>().FirstOrDefault<T>(x => x.Id == id);
@@ -42,6 +68,14 @@ namespace Files.EntityFrameworkCore.Extensions
 			}
 		}
 
+		/// <summary>
+		/// Delete the file for given id, all chunks matching the id will be deleted.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="dbContext"></param>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		/// <exception cref="FileNotFoundException"></exception>
 		public static void DeleteFile<T>(this DbContext dbContext, Guid id) where T : class, IFileEntity
 		{
 			var mainFile = dbContext.Set<T>().FirstOrDefault<T>(x => x.Id == id);

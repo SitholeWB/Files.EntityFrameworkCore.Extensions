@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,9 +9,24 @@ namespace Files.EntityFrameworkCore.Extensions
 {
 	public static class AsyncFilesExtensions
 	{
-		public static async Task<IFileEntity> GetFileInfoAsync<T>(this DbContext dbContext, Guid id, CancellationToken cancellationToken = default) where T : class, IFileEntity
+		/// <summary>
+		/// Get the file info without bytes array
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="dbContext"></param>
+		/// <param name="id"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		public static async Task<FilesExtensionsResponse> GetFileInfoAsync<T>(this DbContext dbContext, Guid id, CancellationToken cancellationToken = default) where T : class, IFileEntity
 		{
-			return await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id, cancellationToken);
+			return await dbContext.Set<T>().Select(x => new FilesExtensionsResponse
+			{
+				Name = x.Name,
+				Id = x.Id,
+				MimeType = x.MimeType,
+				TimeStamp = x.TimeStamp,
+				TotalBytesLength = x.TotalBytesLength,
+			}).FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 		}
 
 		/*
@@ -43,6 +59,16 @@ namespace Files.EntityFrameworkCore.Extensions
 		}
 		*/
 
+		/// <summary>
+		/// Download the file to given stream
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="dbContext"></param>
+		/// <param name="id">File Id</param>
+		/// <param name="outputStream">Stream to receive file</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <exception cref="FileNotFoundException"></exception>
 		public static async Task DownloadFileToStreamAsync<T>(this DbContext dbContext, Guid id, Stream outputStream, CancellationToken cancellationToken = default) where T : class, IFileEntity
 		{
 			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id, cancellationToken);
@@ -73,6 +99,15 @@ namespace Files.EntityFrameworkCore.Extensions
 			}
 		}
 
+		/// <summary>
+		/// Delete the file for given id, all chunks matching the id will be deleted.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="dbContext"></param>
+		/// <param name="id"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <exception cref="FileNotFoundException"></exception>
 		public static async Task DeleteFileAsync<T>(this DbContext dbContext, Guid id, CancellationToken cancellationToken = default) where T : class, IFileEntity
 		{
 			var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id, cancellationToken);

@@ -1,12 +1,13 @@
-﻿using System.IO;
+﻿using System;
 
 namespace Files.EntityFrameworkCore.Extensions
 {
 	public class FilesExtensionsResponse
 	{
-		public Stream Stream { get; set; }
+		public Guid Id { get; set; }
 		public string Name { get; set; }
-		public long Length { get; set; }
 		public string MimeType { get; set; }
+		public DateTimeOffset TimeStamp { get; set; }
+		public long TotalBytesLength { get; set; }
 	}
 }
