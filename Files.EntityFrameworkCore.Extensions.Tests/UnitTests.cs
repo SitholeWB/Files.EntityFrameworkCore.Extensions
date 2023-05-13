@@ -343,6 +343,58 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == response.Id) == 0);
 		}
 
+		[TestCase(10)]
+		[TestCase(20)]
+		[TestCase(30)]
+		[TestCase(60)]
+		public void GetFileInfo_GivenValidInput_SaveFile_ShouldDeleteAllChunksForGivenId(int paragraphs)
+		{
+			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
+			var inputText = lorem.Paragraphs(paragraphs);
+
+			var bytes = Encoding.ASCII.GetBytes(inputText);
+
+			var stream = new MemoryStream(bytes);
+			var filename = lorem.Word();
+			var chunkSize = new Random().Next(60) + 10;
+			var response = _dbContext.SaveFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == response.Id) > 0);
+
+			var fileInfo = _dbContext.GetFileInfo<TextStreamEntity>(response.Id);
+
+			Assert.AreEqual(response.Name, fileInfo.Name);
+			Assert.AreEqual(response.MimeType, fileInfo.MimeType);
+			Assert.AreEqual(response.TotalBytesLength, stream.Length);
+			Assert.Greater(fileInfo.TimeStamp, DateTimeOffset.Now.AddDays(-1));
+		}
+
+		[TestCase(10)]
+		[TestCase(20)]
+		[TestCase(30)]
+		[TestCase(60)]
+		public void GetFileInfo_GivenValidInput_AddFile_ShouldDeleteAllChunksForGivenId(int paragraphs)
+		{
+			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
+			var inputText = lorem.Paragraphs(paragraphs);
+
+			var bytes = Encoding.ASCII.GetBytes(inputText);
+
+			var stream = new MemoryStream(bytes);
+			var filename = lorem.Word();
+			var chunkSize = new Random().Next(60) + 10;
+			var response = _dbContext.AddFile<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+			_dbContext.SaveChanges();
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == response.Id) > 0);
+
+			var fileInfo = _dbContext.GetFileInfo<TextStreamEntity>(response.Id);
+
+			Assert.AreEqual(response.Name, fileInfo.Name);
+			Assert.AreEqual(response.MimeType, fileInfo.MimeType);
+			Assert.AreEqual(response.TotalBytesLength, stream.Length);
+			Assert.Greater(fileInfo.TimeStamp, DateTimeOffset.Now.AddDays(-1));
+		}
+
 		private MyDbContext GetDatabaseContext()
 		{
 			var options = new DbContextOptionsBuilder<MyDbContext>()
