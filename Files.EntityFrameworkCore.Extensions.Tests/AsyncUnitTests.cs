@@ -33,7 +33,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
 			await _dbContext.SaveChangesAsync();
 
-			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response) > 0);
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response.Id) > 0);
 		}
 
 		[TestCase(20)]
@@ -50,7 +50,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
 
-			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response) == 0);
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response.Id) == 0);
 		}
 
 		[TestCase(20)]
@@ -67,7 +67,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
 
-			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response) > 0);
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response.Id) > 0);
 		}
 
 		[TestCase(20)]
@@ -84,7 +84,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
 
-			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId != response) == 0);
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId != response.Id) == 0);
 		}
 
 		[Test]
@@ -98,7 +98,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
 			await _dbContext.SaveChangesAsync();
-			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId != response) == 0);
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId != response.Id) == 0);
 		}
 
 		[TestCase(20)]
@@ -261,10 +261,10 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
 			var chunkSize = new Random().Next(60) + 10;
-			var responseGuid = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+			var response = await _dbContext.SaveFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
 
 			var streamOutput = new MemoryStream();
-			await _dbContext.DownloadFileToStreamAsync<TextStreamEntity>(responseGuid, streamOutput);
+			await _dbContext.DownloadFileToStreamAsync<TextStreamEntity>(response.Id, streamOutput);
 
 			var resultString = Encoding.ASCII.GetString(streamOutput.ToArray());
 
@@ -287,10 +287,10 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
 			var chunkSize = new Random().Next(60) + 10;
-			var responseGuid = await _dbContext.AddFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
 			await _dbContext.SaveChangesAsync();
 			var streamOutput = new MemoryStream();
-			await _dbContext.DownloadFileToStreamAsync<TextStreamEntity>(responseGuid, streamOutput);
+			await _dbContext.DownloadFileToStreamAsync<TextStreamEntity>(response.Id, streamOutput);
 
 			var resultString = Encoding.ASCII.GetString(streamOutput.ToArray());
 
@@ -335,14 +335,14 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var filename = lorem.Word();
 			var chunkSize = new Random().Next(60) + 10;
-			var responseGuid = await _dbContext.AddFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
+			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, filename, "plain/text", chunkSize: chunkSize);
 			await _dbContext.SaveChangesAsync();
-			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == responseGuid) > 0);
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == response.Id) > 0);
 
-			await _dbContext.DeleteFileAsync<TextStreamEntity>(responseGuid);
+			await _dbContext.DeleteFileAsync<TextStreamEntity>(response.Id);
 			await _dbContext.SaveChangesAsync();
 
-			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == responseGuid) == 0);
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.FileId == response.Id) == 0);
 		}
 
 		private MyDbContext GetDatabaseContext()
