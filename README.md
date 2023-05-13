@@ -8,6 +8,8 @@ Works well with **Entity Framework** as an extension.
 ```nuget
 Install-Package Files.EntityFrameworkCore.Extensions
 ```
+
+# Example
 ```C#
   
   	public class UserImage : IFileEntity
