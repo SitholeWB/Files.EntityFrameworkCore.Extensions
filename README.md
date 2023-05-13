@@ -10,6 +10,7 @@ Install-Package Files.EntityFrameworkCore.Extensions
 ```
 
 # Example
+### More examples found inside the repository 
 ```C#
   
   	public class UserImage : IFileEntity
