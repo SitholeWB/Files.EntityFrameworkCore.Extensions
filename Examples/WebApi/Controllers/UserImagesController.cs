@@ -1,6 +1,5 @@
 ﻿using Files.EntityFrameworkCore.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Pagination.EntityFrameworkCore.Extensions;
 using WebApi.Commands;
 using WebApi.Data;
@@ -68,18 +67,6 @@ namespace WebApi.Controllers
 				page = 1;
 			}
 			var userImages = await _context.AsPaginationAsync<UserImage, UserImageDto>(page, limit, x => x.Id == x.FileId, ToDto);
-			return Ok(userImages);
-		}
-
-		[HttpGet("select")]
-		public async Task<ActionResult<object>> GetImagesSelect()
-		{
-			if (_context.UserImage == null)
-			{
-				return NotFound();
-			}
-
-			var userImages = await _context.UserImage.Where(x => x.Id == x.FileId).Select(x => new { id = x.Id, name = x.Name }).ToListAsync();
 			return Ok(userImages);
 		}
 
