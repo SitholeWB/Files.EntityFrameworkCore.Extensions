@@ -11,9 +11,9 @@
     <RepositoryUrl>https://github.com/SitholeWB/Files.EntityFrameworkCore.Extensionshttps://github.com/SitholeWB/Files.EntityFrameworkCore.Extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>files;Entity Framework;storage;blob;bytes;documents</PackageTags>
-    <Version>2.1.0.0</Version>
+    <Version>2.2.0.0</Version>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Copyright>https://raw.githubusercontent.com/SitholeWB/Files.EntityFrameworkCore.Extensions/master/LICENSE</Copyright>
+    <Copyright>MIT</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
