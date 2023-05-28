@@ -23,7 +23,7 @@ namespace WebApi.Controllers
         public async Task<ActionResult<FilesExtensionsResponse>> UploadFile([FromBody] UploadFileIdCommand command)
         {
             //The @"appsettings.json" is a path to any file you will like to save
-            var fileDetails = await _context.SaveFileAsync<OtherFile>(@"appsettings.json", command?.FileId);
+            var fileDetails = await _context.SaveFileAsync<OtherFile>(@"C:/Users/sitho/Downloads/ubuntu-22.04.2-desktop-amd64.iso", command?.FileId);
             await _context.SaveChangesAsync();
             return Ok(fileDetails);
         }
@@ -47,7 +47,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<PaginationAuto<OtherFile, OtherFileDto>>> GetFiles(int page = 1, int limit = 20)
+        public async Task<ActionResult<Pagination<OtherFileDto>>> GetFiles(int page = 1, int limit = 20)
         {
             if (_context.UserImage == null)
             {

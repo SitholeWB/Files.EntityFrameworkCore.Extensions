@@ -71,7 +71,7 @@ namespace Files.EntityFrameworkCore.Extensions
         /// <exception cref="FileNotFoundException"></exception>
         public static async Task DownloadFileToStreamAsync<T>(this DbContext dbContext, Guid id, Stream outputStream, CancellationToken cancellationToken = default) where T : class, IFileEntity
         {
-            var mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == id, cancellationToken);
+            var mainFile = await dbContext.Set<T>().AsNoTracking().FirstOrDefaultAsync<T>(x => x.Id == id, cancellationToken);
             if (mainFile == null)
             {
                 throw new FileNotFoundException();
@@ -80,7 +80,7 @@ namespace Files.EntityFrameworkCore.Extensions
             var nextId = mainFile.NextId;
             while (mainFile.NextId.HasValue)
             {
-                mainFile = await dbContext.Set<T>().FirstOrDefaultAsync<T>(x => x.Id == nextId, cancellationToken);
+                mainFile = await dbContext.Set<T>().AsNoTracking().FirstOrDefaultAsync<T>(x => x.Id == nextId, cancellationToken);
                 if (mainFile == null)
                 {
                     //Should never be null but someone might mess up with chunks in the database
@@ -117,6 +117,8 @@ namespace Files.EntityFrameworkCore.Extensions
             }
 
             dbContext.Remove(mainFile);
+            await dbContext.SaveChangesAsync();
+            dbContext.Entry<T>(mainFile).State = EntityState.Detached;
             var nextId = mainFile.NextId;
             while (mainFile.NextId.HasValue)
             {
@@ -127,6 +129,8 @@ namespace Files.EntityFrameworkCore.Extensions
                     break;
                 }
                 dbContext.Remove(mainFile);
+                await dbContext.SaveChangesAsync();
+                dbContext.Entry<T>(mainFile).State = EntityState.Detached;
                 nextId = mainFile.NextId;
             }
         }
@@ -139,6 +143,7 @@ namespace Files.EntityFrameworkCore.Extensions
             {
                 fileId = Guid.NewGuid();
             }
+
             var filesExtensionsResponse = default(FilesExtensionsResponse);
             var isFirstSave = true;
             do
@@ -196,6 +201,7 @@ namespace Files.EntityFrameworkCore.Extensions
                 if (eagerSave)
                 {
                     await dbContext.SaveChangesAsync(cancellationToken);
+                    dbContext.Entry<T>(tempT).State = EntityState.Detached;
                 }
             } while (stream.Length != stream.Position);
 

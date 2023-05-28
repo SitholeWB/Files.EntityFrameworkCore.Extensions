@@ -40,7 +40,7 @@ namespace Files.EntityFrameworkCore.Extensions
         /// <exception cref="FileNotFoundException"></exception>
         public static void DownloadFileToStream<T>(this DbContext dbContext, Guid id, Stream outputStream) where T : class, IFileEntity
         {
-            var mainFile = dbContext.Set<T>().FirstOrDefault<T>(x => x.Id == id);
+            var mainFile = dbContext.Set<T>().AsNoTracking().FirstOrDefault<T>(x => x.Id == id);
             if (mainFile == null)
             {
                 throw new FileNotFoundException();
@@ -49,7 +49,7 @@ namespace Files.EntityFrameworkCore.Extensions
             var nextId = mainFile.NextId;
             while (mainFile.NextId.HasValue)
             {
-                mainFile = dbContext.Set<T>().FirstOrDefault<T>(x => x.Id == nextId);
+                mainFile = dbContext.Set<T>().AsNoTracking().FirstOrDefault<T>(x => x.Id == nextId);
                 if (mainFile == null)
                 {
                     //Should never be null but someone might mess up with chunks in the database
@@ -85,6 +85,8 @@ namespace Files.EntityFrameworkCore.Extensions
             }
 
             dbContext.Remove(mainFile);
+            dbContext.SaveChanges();
+            dbContext.Entry<T>(mainFile).State = EntityState.Detached;
             var nextId = mainFile.NextId;
             while (mainFile.NextId.HasValue)
             {
@@ -95,6 +97,8 @@ namespace Files.EntityFrameworkCore.Extensions
                     break;
                 }
                 dbContext.Remove(mainFile);
+                dbContext.SaveChanges();
+                dbContext.Entry<T>(mainFile).State = EntityState.Detached;
                 nextId = mainFile.NextId;
             }
         }
@@ -165,6 +169,7 @@ namespace Files.EntityFrameworkCore.Extensions
                 if (eagerSave)
                 {
                     dbContext.SaveChanges();
+                    dbContext.Entry<T>(tempT).State = EntityState.Detached;
                 }
             } while (stream.Length != stream.Position);
 
