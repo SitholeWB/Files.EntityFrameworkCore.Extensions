@@ -223,6 +223,28 @@ namespace Files.EntityFrameworkCore.Extensions
         }
 
         /// <summary>
+        /// The DbContext method "SaveChangesAsync()" will NOT be called after every chunk, this
+        /// will cause Entity Framework to keep so many large chunks in-memory. You must explicitly
+        /// call the SaveChangesAsync()
+        /// NOTE: Default chunk size = 64k
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dbContext"></param>
+        /// <param name="filePath"></param>
+        /// <param name="fileId"></param>
+        /// <param name="chunkSize"></param>
+        /// <param name="options"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public static async Task<FilesExtensionsResponse> AddFileAsync<T>(this DbContext dbContext, string filePath, Guid? fileId = null, int? chunkSize = null, FileOptions options = FileOptions.None, CancellationToken cancellationToken = default) where T : class, IFileEntity, new()
+        {
+            var bufferLen = (chunkSize.HasValue && chunkSize.Value > 0) ? chunkSize.Value : FileHelper.DEFAULT_MAX_CHUNK_SIZE;
+            var fileInfo = new FileInfo(filePath);
+            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferLen, options);
+            return await AddOrSaveFileHelperAsync<T>(dbContext, fileStream, fileInfo.Name, FileHelper.GetMimeType(fileInfo.Extension), fileId, chunkSize, false, cancellationToken);
+        }
+
+        /// <summary>
         /// The DbContext method "SaveChangesAsync()" will be called after every chunk, this is
         /// important if you want to avoid Entity Framework keeping so many large chunks in-memory.
         /// NOTE: Default chunk size = 64k
