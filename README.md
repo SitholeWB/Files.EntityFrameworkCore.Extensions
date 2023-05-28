@@ -78,7 +78,7 @@ Install-Package Files.EntityFrameworkCore.Extensions
         	{
 			//The @"appsettings.json" is a path to any file you will like to save
             		var fileDetails = await _context.SaveFileAsync<UserImage>(@"appsettings.json", command?.FileId);
-            		await _context.SaveChangesAsync();
+			//Save will be auto called on every chunk addition so that memory usage remain low, i.e. await _context.SaveChangesAsync();
             		return Ok(fileDetails);
         	}
 
@@ -114,7 +114,7 @@ Install-Package Files.EntityFrameworkCore.Extensions
 			}
 
 			await _context.DeleteFileAsync<UserImage>(id);
-			await _context.SaveChangesAsync();
+			//Save will be auto called on every chunk deletion so that memory usage remain low, i.e. await _context.SaveChangesAsync();
 
 			return NoContent();
 		}
