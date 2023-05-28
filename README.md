@@ -26,6 +26,11 @@ Install-Package Files.EntityFrameworkCore.Extensions
 		public byte[] Data { get; set; }
 	}
 	
+	public class UploadFileIdCommand
+    	{
+        	public Guid? FileId { get; set; }
+    	}
+	
 	public class UploadCommand
 	{
 		public IFormFile File { get; set; }
@@ -67,6 +72,15 @@ Install-Package Files.EntityFrameworkCore.Extensions
 				return BadRequest("File is required.");
 			}
 		}
+		
+		[HttpPost("other-file")]
+        	public async Task<ActionResult<FilesExtensionsResponse>> UploadOtherFile([FromBody] UploadFileIdCommand command)
+        	{
+			//The @"appsettings.json" is a path to any file you will like to save
+            		var fileDetails = await _context.SaveFileAsync<UserImage>(@"appsettings.json", command?.FileId);
+            		await _context.SaveChangesAsync();
+            		return Ok(fileDetails);
+        	}
 
 		[HttpGet("{id}/download")]
 		public async Task<IActionResult> DownLoadFile(Guid id)
