@@ -101,6 +101,7 @@ namespace Files.EntityFrameworkCore.Extensions
 
         /// <summary>
         /// Delete the file for given id, all chunks matching the id will be deleted.
+        /// NOTE: SaveChangesAsync is auto called on every chunk so that memory usage remain low.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="dbContext"></param>

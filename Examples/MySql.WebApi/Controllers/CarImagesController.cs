@@ -85,7 +85,6 @@ namespace MySql.WebApi.Controllers
             }
 
             await _context.DeleteFileAsync<CarImage>(id);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }

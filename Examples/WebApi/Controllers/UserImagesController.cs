@@ -85,7 +85,6 @@ namespace WebApi.Controllers
             }
 
             await _context.DeleteFileAsync<UserImage>(id);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }

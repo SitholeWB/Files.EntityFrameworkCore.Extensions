@@ -85,7 +85,6 @@ namespace SQLite.WebApi.Controllers
             }
 
             await _context.DeleteFileAsync<FoodImage>(id);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }
