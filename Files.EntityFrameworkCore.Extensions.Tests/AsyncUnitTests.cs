@@ -40,7 +40,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public async Task AddFileAsync_GivenValidInput_And_WithoutInvoke_SaveChangesAsync_ShouldNotSaveChangesToDatabase(int paragraphs)
+		public async Task AddFileAsync_GivenValidInput_And_WithoutInvoke_SaveChangesAsync_ShouldSaveChangesToDatabase(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -50,7 +50,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var response = await _dbContext.AddFileAsync<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
 
-			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response.Id) == 0);
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response.Id) == 1);
 		}
 
 		[TestCase(20)]

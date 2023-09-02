@@ -38,7 +38,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 		[TestCase(30)]
 		[TestCase(40)]
 		[TestCase(100)]
-		public void AddFile_GivenValidInput_And_WithoutInvoke_SaveChanges_ShouldNotSaveChangesToDatabase(int paragraphs)
+		public void AddFile_GivenValidInput_And_WithoutInvoke_SaveChanges_ShouldSaveChangesToDatabase(int paragraphs)
 		{
 			var lorem = new Bogus.DataSets.Lorem(locale: "zu_ZA");
 			var inputText = lorem.Paragraphs(paragraphs);
@@ -48,7 +48,7 @@ namespace Files.EntityFrameworkCore.Extensions.Tests
 			var stream = new MemoryStream(bytes);
 			var response = _dbContext.AddFile<TextStreamEntity>(stream, lorem.Word(), "plain/text", chunkSize: 7);
 
-			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response.Id) == 0);
+			Assert.True(_dbContext.TextStreamEntities.Count(x => x.Id == response.Id) == 1);
 		}
 
 		[TestCase(20)]
