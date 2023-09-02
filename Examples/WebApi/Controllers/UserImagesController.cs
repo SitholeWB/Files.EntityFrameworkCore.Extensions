@@ -27,7 +27,23 @@ namespace WebApi.Controllers
             var file = uploadCommand.File;
             if (file.Length > 0)
             {
-                var fileDetails = await _context.AddFileAsync<UserImage>(file.OpenReadStream(), file.FileName, file.ContentType);
+                var fileDetails = await _context.SaveFileAsync<UserImage>(file.OpenReadStream(), file.FileName, file.ContentType);
+                await _context.SaveChangesAsync();
+                return Ok(fileDetails);
+            }
+            else
+            {
+                return BadRequest("File is required.");
+            }
+        }
+
+        //Example from https://dottutorials.net/dotnet-core-web-api-multipart-form-data-upload-file/
+        [HttpPost]
+        public async Task<ActionResult<FilesExtensionsResponse>> UploadIFormFile([FromForm] IFormFile file)
+        {
+            if (file.Length > 0)
+            {
+                var fileDetails = await _context.SaveFileAsync<UserImage>(file.OpenReadStream(), file.FileName, file.ContentType);
                 await _context.SaveChangesAsync();
                 return Ok(fileDetails);
             }
